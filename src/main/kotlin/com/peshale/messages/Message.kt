@@ -6,6 +6,7 @@ data class Message (
     val ownerId: Int,
     val text: String,
     val dateCreated: LocalDateTime,
+    val isMissing: Boolean,
     val isDeleted: Boolean = false)
 {
 

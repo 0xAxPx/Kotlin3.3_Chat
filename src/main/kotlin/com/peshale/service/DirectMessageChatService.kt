@@ -11,27 +11,31 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class DirectMessageChatService(val usersRepository: UsersRepository) : ChatI {
+class DirectMessageChatService(val usersRepository: UsersRepository, val chatRepository: ChatRepository) : ChatI {
 
     fun addUserToRepo(user: User) {
         usersRepository.add(user)
     }
 
-    override fun create(ownerId: Int, messageTo: Int): UUID {
+    override fun create(initiatorId: Int, messageTo: Int, text: String): UUID {
         val uuid = UUID.randomUUID()
-        val owner = this.usersRepository.getUser(ownerId)
+        val initiator = this.usersRepository.getUser(initiatorId)
         val chatWith = this.usersRepository.getUser(messageTo)
-
-        if (ownerId != messageTo) {
+        val dateCreated = LocalDateTime.now()
+        if (initiatorId != messageTo) {
             val chat = Chat(
-                id = uuid,
-                owner = owner,
-                dateCreated = LocalDateTime.now(),
+                    id = uuid,
+                    ownerId = initiatorId,
+                    messageTo = messageTo,
+                    message = Message(ownerId = initiatorId, text = text, dateCreated = dateCreated, isMissing = false, isDeleted = false),
+                    dateCreated = dateCreated,
+                    isDeleted = false
             )
-            owner.addChat(chat)
-            owner.addUser(chatWith)
+            chatRepository.addChat(chat)
+            initiator.addChat(chat)
+            //initiator.addUser(chatWith)
             chatWith.addChat(chat)
-            chatWith.addUser(owner)
+            //chatWith.addUser(initiator)
         } else {
             throw RuntimeException("You can't create direct chat with yourself")
         }
@@ -46,11 +50,12 @@ class DirectMessageChatService(val usersRepository: UsersRepository) : ChatI {
         TODO("Not yet implemented")
     }
 
-    override fun getChats(ownerId: Int): ArrayList<Chat> {
+    override fun getChats(ownerId: Int, unread: Boolean): ArrayList<Chat> {
         TODO("Not yet implemented")
+
     }
 
-    override fun createMessage(chatId: UUID): Long {
+    override fun createMessage(chatId: UUID, from: Int): Long {
         TODO("Not yet implemented")
     }
 

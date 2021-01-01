@@ -15,6 +15,10 @@ data class User(val id: Int) {
         return this.myChats
     }
 
+    fun getChatByUUID(uuid: UUID): Chat {
+        return myChats.first { it.id == uuid }
+    }
+
     fun addUser(user: User) {
         this.chattingWith.add(user)
     }
