@@ -1,19 +1,16 @@
 package com.peshale.users
 
-import kotlin.collections.HashMap
-import kotlin.random.Random
+import java.util.*
 
 class UsersRepository {
 
-    val repo = HashMap<Int, User>()
+    val repo = LinkedList<User>()
 
-    fun add(user: User): Int {
-        val id = Random.nextInt(1, Int.MAX_VALUE)
-        repo[id] = user
-        return id
+    fun add(user: User): Boolean {
+        return repo.add(user)
     }
 
-    fun getUser(id: Int): User {
-        return repo.get(id)!!
+    fun getUser(id: Int): User? {
+        return repo.find { it.id == id }
     }
 }

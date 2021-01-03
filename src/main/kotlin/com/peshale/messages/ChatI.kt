@@ -2,7 +2,6 @@ package com.peshale.messages
 
 import com.peshale.domain.Chat
 import java.util.*
-import kotlin.collections.ArrayList
 
 interface ChatI {
 
@@ -10,7 +9,7 @@ interface ChatI {
     create new chat
     upon creation return UUID of chat
      */
-    fun create(initiatorId: Int, messageTo: Int, text: String): UUID
+    fun create(initiatorId: Int, recipientId: Int): UUID
 
     /*
     add new message to existing chat
@@ -26,12 +25,12 @@ interface ChatI {
     /*
     Get chats of user
      */
-    fun getChats(ownerId: Int, unread: Boolean): ArrayList<Chat>
+    fun getChats(ownerId: Int): List<Chat>
 
     /*
     Create message
      */
-    fun createMessage(chatId: UUID, from: Int): Long
+    fun createMessage(chatId: UUID, from: Int, to: Int, message: Message): Boolean
 
     /*
     Delete message by its id

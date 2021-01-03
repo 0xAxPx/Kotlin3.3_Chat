@@ -3,35 +3,38 @@ package com.peshale.domain
 import com.peshale.messages.Message
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
-class Chat(id: UUID, ownerId: Int, messageTo: Int, message: Message, dateCreated: LocalDateTime, isDeleted: Boolean) {
-    private val messages: ArrayList<Message>
-    val id: UUID
-    private val ownerId: Int
-    private val messageTo: Int
-    private val message: Message
-    private val localDateTime: LocalDateTime
-    private val isDeleted: Boolean
-    private fun addMessage(message: Message) {
-            messages.add(message)
-    }
+class Chat(id: UUID, ownerId: Int, messageTo: Int, dateCreated: LocalDateTime, isDeleted: Boolean) {
+    val uuid: UUID
+    val ownerId: Int
+    val messageTo: Int
+    val localDateTime: LocalDateTime
+    val incomingMessages: LinkedList<Message>
+    val outgoingMessages: LinkedList<Message>
+    val isDeleted: Boolean
 
     init {
-        messages = ArrayList<Message>()
-        this.id = id
+        this.uuid = id
         this.ownerId = ownerId
         this.messageTo = messageTo
-        this.message = message
         this.localDateTime = dateCreated
+        this.incomingMessages = LinkedList<Message>()
+        this.outgoingMessages = LinkedList<Message>()
         this.isDeleted = isDeleted
-        this.addMessage(message)
     }
 
-    fun getMessages(isMissing: Boolean): List<Message>? {
-        return messages.filter {
-            it.isMissing == isMissing
+    fun addMessage(message: Message, isIncoming: Boolean): Boolean {
+        if (isIncoming) {
+            message.incoming = Message.Incoming.Y
+            return this.incomingMessages.add(message)
+        } else {
+            message.incoming = Message.Incoming.N
+            return this.outgoingMessages.add(message)
         }
     }
+
+//    //generic
+//    fun addMessage(message: Message): Boolean {
+//        return messages.add(message)
+//    }
 }

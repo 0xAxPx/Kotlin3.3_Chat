@@ -16,7 +16,7 @@ data class User(val id: Int) {
     }
 
     fun getChatByUUID(uuid: UUID): Chat {
-        return myChats.first { it.id == uuid }
+        return myChats.first { it.uuid == uuid }
     }
 
     fun addUser(user: User) {
