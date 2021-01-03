@@ -12,12 +12,6 @@ interface ChatI {
     fun create(initiatorId: Int, recipientId: Int, message: Message): UUID
 
     /*
-    add new message to existing chat
-    upon adding returns true otherwise false
-     */
-    fun add(chatId: UUID): Boolean
-
-    /*
      Upon delete return true otherwise false
      */
     fun  delete(chatId: UUID): Boolean
@@ -30,16 +24,16 @@ interface ChatI {
     /*
     Create message
      */
-    fun addMessage(chatId: UUID, from: Int, to: Int, message: Message)
+    fun addMessage(chatId: UUID, message: Message)
 
     /*
     Delete message by its id
      */
-    fun deleteMessage(chatId: UUID, messageId: Long):Boolean
+    fun deleteMessage(chatId: UUID, messageId: Int):Boolean
 
     /*
-    Edit message, returns new message
+    Get chat messages
      */
-    fun  editMessage(chatId: UUID, messageId: Long, text: String): Message
+    fun  getChatMessages(ownerId: Int, chatId: UUID, lastMessageId: Int, count: Int): List<Message>
 
 }

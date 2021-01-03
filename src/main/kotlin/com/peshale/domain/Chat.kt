@@ -9,8 +9,9 @@ class Chat(id: UUID, ownerId: Int, recipientId: Int, dateCreated: LocalDateTime,
     val ownerId: Int
     val recipientId: Int
     val localDateTime: LocalDateTime
-    val message: Message
+    var message: Message
     val isDeleted: Boolean
+    val messages: LinkedList<Message>
 
     init {
         this.uuid = id
@@ -19,5 +20,6 @@ class Chat(id: UUID, ownerId: Int, recipientId: Int, dateCreated: LocalDateTime,
         this.localDateTime = dateCreated
         this.message = message
         this.isDeleted = isDeleted
+        this.messages = LinkedList<Message>()
     }
 }

@@ -1,19 +1,15 @@
 package com.peshale.service
 
 import com.peshale.domain.Chat
+import com.peshale.domain.ChatRepository
 import com.peshale.messages.ChatI
 import com.peshale.messages.Message
-import com.peshale.users.User
 import com.peshale.users.UsersRepository
 import java.lang.RuntimeException
 import java.time.LocalDateTime
 import java.util.*
 
 class DirectMessageChatService(val usersRepository: UsersRepository, val chatRepository: ChatRepository) : ChatI {
-
-    fun addUserToRepo(user: User) {
-        usersRepository.add(user)
-    }
 
     override fun create(initiatorId: Int, recipientId: Int, message: Message): UUID {
         //check if chat participants exists
@@ -27,11 +23,10 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
         }
 
         val uuid = UUID.randomUUID()
-        val initiator = this.usersRepository.getUser(initiatorId)
-        val chatWith = this.usersRepository.getUser(recipientId)
         val dateCreated = LocalDateTime.now()
+        val chat: Chat
         if (initiatorId != recipientId) {
-            val chat = Chat(
+            chat = Chat(
                     id = uuid,
                     ownerId = initiatorId,
                     recipientId = recipientId,
@@ -40,23 +35,17 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
                     isDeleted = false
             )
 
-            //new message to recipientId
-            //chat.addMessage(message)
-            chatRepository.addChat(uuid, chat)
-            initiator?.addChat(chat, true)
-            chatWith?.addChat(chat, false)
+            chatRepository.addMessageToChat(chat, true)
+            chatRepository.addMessageToChat(chat, false)
         } else {
             throw RuntimeException("You can't create direct chat with yourself")
         }
         return uuid;
     }
 
-    override fun add(chatId: UUID): Boolean {
-        TODO("Not yet implemented")
-    }
-
     override fun delete(chatId: UUID): Boolean {
         val chat = chatRepository.getChat(chatId)
+        chatRepository.deleteChat(chatId)
         if (chat != null) {
             usersRepository.getUser(chat.ownerId)?.deleteChat(chat)
             usersRepository.getUser(chat.recipientId)?.deleteChat(chat)
@@ -64,23 +53,34 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
         return chatRepository.deleteChat(chatId)
     }
 
+    //get chats for specific user and there are messages with Unread = True
     override fun getChats(ownerId: Int): List<Chat> {
-        val user = usersRepository.getUser(ownerId)
-        return user?.getChats()!!
+        val userChats = chatRepository.getUserChats()
+        return userChats.filter { it.ownerId == ownerId && !it.messages.isEmpty() }
     }
 
-    override fun addMessage(chatId: UUID, from: Int, to: Int, message: Message) {
-        val initiator = this.usersRepository.getUser(from)
-        val recipient = this.usersRepository.getUser(to)
-        initiator?.outgoing?.add(message)
-        recipient?.incoming?.add(message)
+    override fun addMessage(chatId: UUID, message: Message) {
+        val chat = chatRepository.getChatByUUID(chatId)
+        chat.message = message
+        chatRepository.addMessageToChat(chat, true)
+        chatRepository.addMessageToChat(chat, false)
     }
 
-    override fun deleteMessage(chatId: UUID, messageId: Long): Boolean {
-        TODO("Not yet implemented")
+    override fun deleteMessage(chatId: UUID, messageId: Int): Boolean {
+        val chat = chatRepository.getChatByUUID(chatId)
+        return chat.messages.removeIf { it.id == messageId }
     }
 
-    override fun editMessage(chatId: UUID, messageId: Long, text: String): Message {
-        TODO("Not yet implemented")
+    //getting all messages where ownerId == userId i.e. we return only user's message not all messages from the chat
+    override fun getChatMessages(ownerId: Int, chatId: UUID, lastMessageId: Int, count: Int): List<Message> {
+        val chat = chatRepository.getChatByUUID(chatId)
+        //sorted by id in descending order
+        chat.messages.sortWith(compareByDescending { it.id })
+        val filteredMessages = chat.messages.filter { it.ownerId == ownerId && it.id > lastMessageId }.take(count)
+        //make all messages are Unread = False i.e user read them
+        filteredMessages.forEach { m ->
+            m.isUnread = false
+        }
+        return filteredMessages
     }
 }
