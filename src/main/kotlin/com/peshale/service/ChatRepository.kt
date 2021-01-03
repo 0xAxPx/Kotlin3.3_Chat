@@ -13,7 +13,7 @@ class ChatRepository {
     }
 
     fun ifChatExist(initiatorId: Int, messageTo: Int): Chat? {
-        return chatRepository.values.find { it.ownerId == initiatorId && it.messageTo == messageTo }
+        return chatRepository.values.find { it.ownerId == initiatorId && it.recipientId == messageTo }
     }
 
     fun deleteChat(uuid: UUID): Boolean {
@@ -22,11 +22,11 @@ class ChatRepository {
         }
     }
 
-    fun getChats(initiatorId: Int): List<Chat> {
-        return chatRepository.values.filter { it.ownerId == initiatorId }
-    }
-
     fun getRepoSize(): HashMap<UUID, Chat> {
         return this.chatRepository
+    }
+
+    fun getChat(uuid: UUID): Chat? {
+        return chatRepository.get(uuid)
     }
 }

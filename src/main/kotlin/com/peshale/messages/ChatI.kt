@@ -9,7 +9,7 @@ interface ChatI {
     create new chat
     upon creation return UUID of chat
      */
-    fun create(initiatorId: Int, recipientId: Int): UUID
+    fun create(initiatorId: Int, recipientId: Int, message: Message): UUID
 
     /*
     add new message to existing chat
@@ -30,7 +30,7 @@ interface ChatI {
     /*
     Create message
      */
-    fun createMessage(chatId: UUID, from: Int, to: Int, message: Message): Boolean
+    fun addMessage(chatId: UUID, from: Int, to: Int, message: Message)
 
     /*
     Delete message by its id

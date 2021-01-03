@@ -15,7 +15,7 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
         usersRepository.add(user)
     }
 
-    override fun create(initiatorId: Int, recipientId: Int): UUID {
+    override fun create(initiatorId: Int, recipientId: Int, message: Message): UUID {
         //check if chat participants exists
         if (usersRepository.getUser(initiatorId) == null && usersRepository.getUser(recipientId) == null) {
             throw RuntimeException("Check if both users exist with id: $initiatorId, $recipientId")
@@ -34,15 +34,17 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
             val chat = Chat(
                     id = uuid,
                     ownerId = initiatorId,
-                    messageTo = recipientId,
+                    recipientId = recipientId,
                     dateCreated = dateCreated,
+                    message = message,
                     isDeleted = false
             )
+
+            //new message to recipientId
+            //chat.addMessage(message)
             chatRepository.addChat(uuid, chat)
-            initiator?.addChat(chat)
-            //initiator.addUser(chatWith)
-            chatWith?.addChat(chat)
-            //chatWith.addUser(initiator)
+            initiator?.addChat(chat, true)
+            chatWith?.addChat(chat, false)
         } else {
             throw RuntimeException("You can't create direct chat with yourself")
         }
@@ -54,28 +56,24 @@ class DirectMessageChatService(val usersRepository: UsersRepository, val chatRep
     }
 
     override fun delete(chatId: UUID): Boolean {
+        val chat = chatRepository.getChat(chatId)
+        if (chat != null) {
+            usersRepository.getUser(chat.ownerId)?.deleteChat(chat)
+            usersRepository.getUser(chat.recipientId)?.deleteChat(chat)
+        }
         return chatRepository.deleteChat(chatId)
     }
 
     override fun getChats(ownerId: Int): List<Chat> {
-        val chatList = chatRepository.getChats(ownerId)
-        chatList.forEach { c ->
-            run {
-                println("Number of incoming messages: ${c.incomingMessages.size}")
-                println("Number outgoing messages: ${c.outgoingMessages.size}")
-            }
-        }
-        return chatList
+        val user = usersRepository.getUser(ownerId)
+        return user?.getChats()!!
     }
 
-    override fun createMessage(chatId: UUID, from: Int, to: Int, message: Message): Boolean {
-//        val initiator = this.usersRepository.getUser(from)
-//        val chatWith = this.usersRepository.getUser(to)
-//        initiator.getChatByUUID(chatId).addMessage(message, isIncoming = false)
-//        chatWith.getChatByUUID(chatId).addMessage(message, isIncoming = true)
-//        val chat = chatRepository.chatRepository.get(chatId)
-//        return chat!!.addMessage(message)
-        return false
+    override fun addMessage(chatId: UUID, from: Int, to: Int, message: Message) {
+        val initiator = this.usersRepository.getUser(from)
+        val recipient = this.usersRepository.getUser(to)
+        initiator?.outgoing?.add(message)
+        recipient?.incoming?.add(message)
     }
 
     override fun deleteMessage(chatId: UUID, messageId: Long): Boolean {
