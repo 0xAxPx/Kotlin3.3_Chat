@@ -101,14 +101,6 @@ internal class DirectMessageChatServiceTest {
         val directChat = DirectMessageChatService(usersRepository, chatRepository)
         val uuidChat = directChat.create(user1.id, user2.id, createMessage(1, from = user1.id, to = user2.id, text = "Message 1", dateCreated = LocalDateTime.now()))
 
-        //filtering id in (1,2,3,4,5,6)
-        directChat.addMessage(chatId = uuidChat, createMessage(6, from = user2.id, to = user1.id, text = "Message 6", dateCreated = LocalDateTime.now()))
-        directChat.addMessage(chatId = uuidChat, createMessage(5, from = user2.id, to = user1.id, text = "Message 5", dateCreated = LocalDateTime.now()))
-        directChat.addMessage(chatId = uuidChat, createMessage(4, from = user2.id, to = user1.id, text = "Message 4", dateCreated = LocalDateTime.now()))
-        directChat.addMessage(chatId = uuidChat, createMessage(3, from = user2.id, to = user1.id, text = "Message 3", dateCreated = LocalDateTime.now()))
-        directChat.addMessage(chatId = uuidChat, createMessage(2, from = user2.id, to = user1.id, text = "Message 2", dateCreated = LocalDateTime.now()))
-        directChat.addMessage(chatId = uuidChat, createMessage(7, from = user2.id, to = user1.id, text = "Message 7", dateCreated = LocalDateTime.now()))
-
         for (i in 1..10000) {
             directChat.addMessage(chatId = uuidChat, createMessage(i+1, from = user2.id, to = user1.id, text = "Message ${i+1}", dateCreated = LocalDateTime.now()))
         }
