@@ -109,13 +109,21 @@ internal class DirectMessageChatServiceTest {
         directChat.addMessage(chatId = uuidChat, createMessage(2, from = user2.id, to = user1.id, text = "Message 2", dateCreated = LocalDateTime.now()))
         directChat.addMessage(chatId = uuidChat, createMessage(7, from = user2.id, to = user1.id, text = "Message 7", dateCreated = LocalDateTime.now()))
 
-        val result = directChat.getChatMessages(user1.id, uuidChat, 2, 4)
-        val expectedList = listOf<Int>(4,5,6,7)
-        result.forEach {
-            assertFalse(it.isUnread)
+        for (i in 1..10000) {
+            directChat.addMessage(chatId = uuidChat, createMessage(i+1, from = user2.id, to = user1.id, text = "Message ${i+1}", dateCreated = LocalDateTime.now()))
         }
+
+        //measurement for asSequence()
+        val start = System.currentTimeMillis()
+        val result = directChat.getChatMessages(user1.id, uuidChat, 2, 4)
+        val finish = System.currentTimeMillis()
+        println("Time = ${finish - start} ms")
+        val expectedList = listOf<Int>(4, 5, 6, 7)
         result.forEach {
-            assertTrue(expectedList.contains(it.id))
+            assertAll("Message",
+                    { assertFalse(it.isUnread) },
+                    { assertTrue(expectedList.contains(it.id)) }
+            )
         }
     }
 
@@ -194,14 +202,14 @@ internal class DirectMessageChatServiceTest {
         val uuidChat1 = directChat.create(user1.id, user2.id, createMessage(6, from = user1.id, to = user1.id, text = "Message 6", dateCreated = LocalDateTime.now()))
         val uuidChat2 = directChat.create(user3.id, user2.id, createMessage(2, from = user3.id, to = user2.id, text = "Message 2", dateCreated = LocalDateTime.now()))
         assertTrue(2 == chatRepository.getUserChats().size)
-        chatRepository.getUserChats().forEach {
-            c -> assertTrue(2 == c.messages.size)
+        chatRepository.getUserChats().forEach { c ->
+            assertTrue(2 == c.messages.size)
         }
         directChat.addMessage(chatId = uuidChat1, createMessage(3, from = user1.id, to = user2.id, text = "Message 3", dateCreated = LocalDateTime.now()))
-        directChat.deleteMessage(uuidChat1,6)
+        directChat.deleteMessage(uuidChat1, 6)
         assertTrue(2 == chatRepository.getChat(uuidChat1)!!.messages.size)
 
-        directChat.deleteMessage(uuidChat1,3)
+        directChat.deleteMessage(uuidChat1, 3)
         assertTrue(0 == chatRepository.getChat(uuidChat1)!!.messages.size)
     }
 
